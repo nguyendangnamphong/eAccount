@@ -1,0 +1,17 @@
+application {
+  config {
+    baseName eAccount
+    applicationType microservice
+    packageName com.vnu.uet
+    authenticationType jwt
+    databaseType sql
+    devDatabaseType mysql
+    prodDatabaseType mysql
+    serverPort 8047
+    serviceDiscoveryType eureka
+    buildTool maven
+    testFrameworks [cypress]
+    nativeLanguage vi
+    languages [vi, en]
+  }
+}
