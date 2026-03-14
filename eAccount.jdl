@@ -15,3 +15,39 @@ application {
     languages [vi, en]
   }
 }
+
+// ==========================================
+// Added entities based on eAccount features
+// ==========================================
+
+enum Gender {
+    MALE, FEMALE, OTHER
+}
+
+entity UserProfile {
+    phone String required unique
+    dob Instant
+    gender Gender
+    position String
+    job String
+    department String
+}
+
+entity UserToken {
+    tokenStr String required
+    expiryDate Instant required
+    isRevoked Boolean
+    createdAt Instant
+}
+
+relationship OneToOne {
+    UserProfile{user(email)} to User with builtInEntity
+}
+
+relationship ManyToOne {
+    UserToken{user(email)} to User with builtInEntity
+}
+
+// Generate DTOs, Services, and MapStruct mappers
+dto * with mapstruct
+service * with serviceClass

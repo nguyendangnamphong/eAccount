@@ -4,6 +4,7 @@
     "authenticationType": "jwt",
     "baseName": "eAccount",
     "buildTool": "maven",
+    "creationTimestamp": 1773500955113,
     "databaseType": "sql",
     "devDatabaseType": "mysql",
     "entities": [],
