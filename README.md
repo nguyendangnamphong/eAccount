@@ -20,7 +20,7 @@ Dự án được xây dựng trên nền tảng hiện đại, kế thừa từ
 - **Hạ tầng & Build**:
   - **Maven**: Công cụ quản lý build project.
   - **S3**: Quản lý ảnh avatar.                                          
-  - **Docker / Jib**: Đóng gói ứng dụng dưới dạng Container.
+  - **Docker**: Đóng gói ứng dụng dưới dạng Container.
 
 ---
 
@@ -47,9 +47,9 @@ Quyền được thiết kế theo mô hình **Âm (-1) / Dương (1-5)**:
 
 ---
 
-## 4. Kiến trúc Tầng Service (Business Logic)
+## 4. Kiến trúc Tầng Service
 
-1. **PermissionManagementService**: Quản lý logic đồng bộ quyền (Sync/Overwrite).
+1. **PermissionManagementService**: Quản lý logic đồng bộ quyền.
 2. **AccountManagementService**: Xử lý tạo nhân viên mới, sinh mật khẩu và xóa tài khoản có kiểm tra thẩm quyền.
 3. **AuthInterService & TokenManagementService**: Cung cấp dịch vụ xác thực nội bộ và quản lý vòng đời Token.
 4. **UserProfileService**: Quản lý hồ sơ cá nhân và tích hợp lưu trữ.
@@ -72,6 +72,7 @@ Quyền được thiết kế theo mô hình **Âm (-1) / Dương (1-5)**:
 - `POST /api/internal/auth/generate-token`: Tạo token nội bộ.
 - `POST /api/internal/auth/validate-token`: Validate token.
 - `POST /api/internal/permissions/check-access`: Kiểm tra quyền truy cập.
+...............................
 
 ---
 
