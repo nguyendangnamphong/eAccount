@@ -2,7 +2,8 @@ package com.vnu.uet.config;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
-import com.vnu.uet.security.*;
+import com.vnu.uet.security.AuthoritiesConstants;
+import com.vnu.uet.security.SecurityUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -35,6 +36,11 @@ public class SecurityConfiguration {
                 authz
                     .requestMatchers(mvc.pattern(HttpMethod.POST, "/api/authenticate")).permitAll()
                     .requestMatchers(mvc.pattern(HttpMethod.GET, "/api/authenticate")).permitAll()
+                    .requestMatchers(mvc.pattern("/api/account/**")).permitAll()
+                    .requestMatchers(mvc.pattern("/api/internal/**")).permitAll()
+                    .requestMatchers(mvc.pattern("/api/hr/**")).permitAll()
+                    .requestMatchers(mvc.pattern("/api/management/**")).permitAll()
+                    .requestMatchers(mvc.pattern("/api/permissions/**")).permitAll()
                     .requestMatchers(mvc.pattern("/api/admin/**")).hasAuthority(AuthoritiesConstants.ADMIN)
                     .requestMatchers(mvc.pattern("/api/**")).authenticated()
                     .requestMatchers(mvc.pattern("/v3/api-docs/**")).hasAuthority(AuthoritiesConstants.ADMIN)

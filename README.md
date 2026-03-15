@@ -1,175 +1,106 @@
-# eAccount
+# eAccount - Microservice Quản lý Tài khoản và Phân quyền
 
-This application was generated using JHipster 8.7.3, you can find documentation and help at [https://www.jhipster.tech/documentation-archive/v8.7.3](https://www.jhipster.tech/documentation-archive/v8.7.3).
+## 1. Tổng quan Dự án
+Microservice **eAccount** là thành phần cốt lõi trong hệ sinh thái eOffice, chịu trách nhiệm quản lý danh tính người dùng (Identity), hồ sơ nhân viên (Profile), ma trận quyền hạn (Permissions) và cung cấp các dịch vụ xác thực nội bộ cho toàn bộ các Microservices khác (eForm, eFlow).
 
-This is a "microservice" application intended to be part of a microservice architecture, please refer to the [Doing microservices with JHipster][] page of the documentation for more information.
+---
 
-This application is configured for Service Discovery and Configuration with the JHipster-Registry. On launch, it will refuse to start if it is not able to connect to the JHipster-Registry at [http://localhost:8761](http://localhost:8761). For more information, read our documentation on [Service Discovery and Configuration with the JHipster-Registry][].
+## 2. Công nghệ và Hạ tầng (Technology Stack)
+Dự án được xây dựng trên nền tảng hiện đại, kế thừa từ JHipster:
 
-## Project Structure
+- **Ngôn ngữ & Framework chính**:
+  - **Java 21**: Tối ưu hóa hiệu năng và tính năng ngôn ngữ mới nhất.
+  - **Spring Boot 3.3.5**: Framework nền tảng cho Microservices.
+  - **JHipster 8.7.2**: Khung nền tảng quản trị tiên tiến.
+- **Cơ sở dữ liệu & Lưu trữ**:
+  - **MySQL**: Hệ quản trị CSDL quan hệ chính.
+  - **Liquibase**: Quản lý phiên bản và cấu trúc database.
+  - **Hazelcast**: Cơ chế caching phân tán.
+- **Bảo mật & API**:
+  - **Spring Security (OAuth2 / JWT)**: Bảo mật phân tán qua JSON Web Token.
+  - **Springdoc OpenAPI (Swagger)**: Tự động tạo tài liệu API.
+- **Hạ tầng & Build**:
+  - **Maven**: Công cụ quản lý build project.
+  - **Undertow**: Máy chủ web nhúng hiệu năng cao.
+  - **Docker / Jib**: Đóng gói ứng dụng dưới dạng Container.
 
-Node is required for generation and recommended for development. `package.json` is always generated for a better development experience with prettier, commit hooks, scripts and so on.
+---
 
-In the project root, JHipster generates configuration files for tools like git, prettier, eslint, husky, and others that are well known and you can find references in the web.
+## 3. Thiết kế Cơ sở dữ liệu (Database Design)
 
-`/src/*` structure follows default Java structure.
+### 3.1. Thực thể `User` (Mặc định)
+- Quản lý các thông tin cốt lõi: `email`, `password_hash`, `activated`.
 
-- `.yo-rc.json` - Yeoman configuration file
-  JHipster configuration is stored in this file at `generator-jhipster` key. You may find `generator-jhipster-*` for specific blueprints configuration.
-- `.yo-resolve` (optional) - Yeoman conflict resolver
-  Allows to use a specific action when conflicts are found skipping prompts for files that matches a pattern. Each line should match `[pattern] [action]` with pattern been a [Minimatch](https://github.com/isaacs/minimatch#minimatch) pattern and action been one of skip (default if omitted) or force. Lines starting with `#` are considered comments and are ignored.
-- `.jhipster/*.json` - JHipster entity configuration files
-- `/src/main/docker` - Docker configurations for the application and services that the application depends on
+### 3.2. Thực thể `UserProfile` (Mở rộng)
+- **Mối quan hệ**: One-to-One với `User`.
+- **Thông tin chi tiết**: `phone`, `dob`, `gender`, `position`, `job`, `department`, `avatar`.
 
-## Development
+### 3.3. Thực thể `UserToken`
+- Quản lý trạng thái đăng nhập và thu hồi quyền truy cập (`token_str`, `expiry_date`, `is_revoked`).
 
-To start your application in the dev profile, run:
+### 3.4. Ma trận Quyền (Permission Matrix)
+Quyền được thiết kế theo mô hình **Âm (-1) / Dương (1-5)**:
+- **-1**: Quyền quản lý cá nhân (Mặc định).
+- **1**: Quản lý nhân sự (Tạo tài khoản).
+- **2**: Quyền hồ sơ (eForm).
+- **3**: Quyền luồng (eFlow).
+- **4**: Quản lý tài khoản (Tìm kiếm/Xóa mọi tài khoản).
+- **5**: Quản lý truy cập (Gán/Gỡ quyền).
 
-```
+---
+
+## 4. Kiến trúc Tầng Service (Business Logic)
+
+1. **PermissionManagementService**: Quản lý logic đồng bộ quyền (Sync/Overwrite).
+2. **AccountManagementService**: Xử lý tạo nhân viên mới, sinh mật khẩu và xóa tài khoản có kiểm tra thẩm quyền.
+3. **AuthInterService & TokenManagementService**: Cung cấp dịch vụ xác thực nội bộ và quản lý vòng đời Token.
+4. **UserProfileService**: Quản lý hồ sơ cá nhân và tích hợp lưu trữ.
+
+---
+
+## 5. Danh mục API Chi tiết
+
+### 5.1. Nhóm Quản trị Nhân sự & Tài khoản
+- `POST /api/account/profile`: Tạo mới/Cập nhật nhân sự.
+- `POST /api/management/account/search`: Tìm kiếm user.
+- `POST /api/management/account/delete`: Xóa tài khoản.
+
+### 5.2. Nhóm Phân quyền
+- `GET /api/permissions/system-roles`: Danh sách quyền hệ thống.
+- `POST /api/permissions/sync`: Đồng bộ hóa danh sách quyền.
+- `POST /api/permissions/search-user-roles`: Xem quyền của user.
+
+### 5.3. Nhóm Inter-service (Nội bộ)
+- `POST /api/internal/auth/generate-token`: Tạo token nội bộ.
+- `POST /api/internal/auth/validate-token`: Validate token.
+- `POST /api/internal/permissions/check-access`: Kiểm tra quyền truy cập.
+
+---
+
+## 6. Hướng dẫn Phát triển & Triển khai
+
+### Phát triển (Development)
+Để chạy ứng dụng ở chế độ dev, thực hiện lệnh:
+```bash
 ./mvnw
 ```
 
-For further instructions on how to develop with JHipster, have a look at [Using JHipster in development][].
-
-## Building for production
-
-### Packaging as jar
-
-To build the final jar and optimize the eAccount application for production, run:
-
-```
+### Đóng gói (Production)
+Để đóng gói thành file JAR:
+```bash
 ./mvnw -Pprod clean verify
 ```
 
-To ensure everything worked, run:
-
-```
-java -jar target/*.jar
-```
-
-Refer to [Using JHipster in production][] for more details.
-
-### Packaging as war
-
-To package your application as a war in order to deploy it to an application server, run:
-
-```
-./mvnw -Pprod,war clean verify
-```
-
-### JHipster Control Center
-
-JHipster Control Center can help you manage and control your application(s). You can start a local control center server (accessible on http://localhost:7419) with:
-
-```
-docker compose -f src/main/docker/jhipster-control-center.yml up
-```
-
-## Testing
-
-### Spring Boot tests
-
-To launch your application's tests, run:
-
-```
-./mvnw verify
-```
-
-## Others
-
-### Code quality using Sonar
-
-Sonar is used to analyse code quality. You can start a local Sonar server (accessible on http://localhost:9001) with:
-
-```
-docker compose -f src/main/docker/sonar.yml up -d
-```
-
-Note: we have turned off forced authentication redirect for UI in [src/main/docker/sonar.yml](src/main/docker/sonar.yml) for out of the box experience while trying out SonarQube, for real use cases turn it back on.
-
-You can run a Sonar analysis with using the [sonar-scanner](https://docs.sonarqube.org/display/SCAN/Analyzing+with+SonarQube+Scanner) or by using the maven plugin.
-
-Then, run a Sonar analysis:
-
-```
-./mvnw -Pprod clean verify sonar:sonar -Dsonar.login=admin -Dsonar.password=admin
-```
-
-If you need to re-run the Sonar phase, please be sure to specify at least the `initialize` phase since Sonar properties are loaded from the sonar-project.properties file.
-
-```
-./mvnw initialize sonar:sonar -Dsonar.login=admin -Dsonar.password=admin
-```
-
-Additionally, Instead of passing `sonar.password` and `sonar.login` as CLI arguments, these parameters can be configured from [sonar-project.properties](sonar-project.properties) as shown below:
-
-```
-sonar.login=admin
-sonar.password=admin
-```
-
-For more information, refer to the [Code quality page][].
-
-### Docker Compose support
-
-JHipster generates a number of Docker Compose configuration files in the [src/main/docker/](src/main/docker/) folder to launch required third party services.
-
-For example, to start required services in Docker containers, run:
-
-```
-docker compose -f src/main/docker/services.yml up -d
-```
-
-To stop and remove the containers, run:
-
-```
-docker compose -f src/main/docker/services.yml down
-```
-
-[Spring Docker Compose Integration](https://docs.spring.io/spring-boot/reference/features/dev-services.html) is enable by default. It's possible to disable it in application.yml:
-
-```yaml
-spring:
-  ...
-  docker:
-    compose:
-      enabled: false
-```
-
-You can also fully dockerize your application and all the services that it depends on.
-To achieve this, first build a Docker image of your app by running:
-
-```sh
-npm run java:docker
-```
-
-Or build a arm64 Docker image when using an arm64 processor os like MacOS with M1 processor family running:
-
-```sh
-npm run java:docker:arm64
-```
-
-Then run:
-
-```sh
+Để chạy với Docker:
+```bash
 docker compose -f src/main/docker/app.yml up -d
 ```
 
-For more information refer to [Using Docker and Docker-Compose][], this page also contains information on the Docker Compose sub-generator (`jhipster docker-compose`), which is able to generate Docker configurations for one or several JHipster applications.
+### Kiểm thử (Testing)
+Chạy bộ kiểm thử tự động:
+```bash
+./mvnw verify
+```
 
-## Continuous Integration (optional)
-
-To configure CI for your project, run the ci-cd sub-generator (`jhipster ci-cd`), this will let you generate configuration files for a number of Continuous Integration systems. Consult the [Setting up Continuous Integration][] page for more information.
-
-[JHipster Homepage and latest documentation]: https://www.jhipster.tech
-[JHipster 8.7.3 archive]: https://www.jhipster.tech/documentation-archive/v8.7.3
-[Doing microservices with JHipster]: https://www.jhipster.tech/documentation-archive/v8.7.3/microservices-architecture/
-[Using JHipster in development]: https://www.jhipster.tech/documentation-archive/v8.7.3/development/
-[Service Discovery and Configuration with the JHipster-Registry]: https://www.jhipster.tech/documentation-archive/v8.7.3/microservices-architecture/#jhipster-registry
-[Using Docker and Docker-Compose]: https://www.jhipster.tech/documentation-archive/v8.7.3/docker-compose
-[Using JHipster in production]: https://www.jhipster.tech/documentation-archive/v8.7.3/production/
-[Running tests page]: https://www.jhipster.tech/documentation-archive/v8.7.3/running-tests/
-[Code quality page]: https://www.jhipster.tech/documentation-archive/v8.7.3/code-quality/
-[Setting up Continuous Integration]: https://www.jhipster.tech/documentation-archive/v8.7.3/setting-up-ci/
-[Node.js]: https://nodejs.org/
-[NPM]: https://www.npmjs.com/
+---
+© 2026 eOffice Project - eAccount Microservice.

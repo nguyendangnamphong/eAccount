@@ -43,7 +43,7 @@ eureka:
     metadata-map:
       zone: primary # This is needed for the load balancer
       profile: ${spring.profiles.active}
-      version: '@project.version@'
+      version: '0.0.1-SNAPSHOT'
       git-version: ${git.commit.id.describe:}
       git-commit: ${git.commit.id.abbrev:}
       git-branch: ${git.branch:}
@@ -134,7 +134,7 @@ spring:
     # The commented value for `active` can be replaced with valid Spring profiles to load.
     # Otherwise, it will be filled in by maven when building the JAR file
     # Either way, it can be overridden by `--spring.profiles.active` value passed in the commandline or `-Dspring.profiles.active` set in `JAVA_OPTS`
-    active: '@spring.profiles.active@'
+    active: dev
     group:
       dev:
         - dev
@@ -143,6 +143,13 @@ spring:
         #- tls
   jmx:
     enabled: false
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    url: jdbc:mysql://localhost:3306/eAccount?useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&createDatabaseIfNotExist=true
+    username: root
+    password:
+  liquibase:
+    contexts: dev, faker
   data:
     jpa:
       repositories:
@@ -248,7 +255,6 @@ jhipster:
     contact-email:
     license: unlicensed
     license-url:
-  security:
 # ===================================================================
 # Application specific properties
 # Add your own application properties here, see the ApplicationProperties class
