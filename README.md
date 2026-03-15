@@ -1,4 +1,4 @@
-# eAccount - Microservice Quản lý Tài khoản và Phân quyền
+# eAccount - Quản lý Tài khoản và Phân quyền
 
 ## 1. Tổng quan Dự án
 Microservice **eAccount** là thành phần cốt lõi trong hệ sinh thái eOffice, chịu trách nhiệm quản lý danh tính người dùng (Identity), hồ sơ nhân viên (Profile), ma trận quyền hạn (Permissions) và cung cấp các dịch vụ xác thực nội bộ cho toàn bộ các Microservices khác (eForm, eFlow).
