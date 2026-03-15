@@ -1,11 +1,11 @@
 # eAccount - Quản lý Tài khoản và Phân quyền
 
 ## 1. Tổng quan Dự án
-Microservice **eAccount** là thành phần cốt lõi trong hệ sinh thái eOffice, chịu trách nhiệm quản lý danh tính người dùng (Identity), hồ sơ nhân viên (Profile), ma trận quyền hạn (Permissions) và cung cấp các dịch vụ xác thực nội bộ cho toàn bộ các Microservices khác (eForm, eFlow).
+Microservice **eAccount** là thành phần cốt lõi trong việc phụ trách security: chịu trách nhiệm quản lý danh tính người dùng (Identity), hồ sơ nhân viên (Profile), Quyền hạn (Permissions) và cung cấp các dịch vụ xác thực nội bộ cho các Services khác (eForm, eFlow, eRequest).
 
 ---
 
-## 2. Công nghệ và Hạ tầng (Technology Stack)
+## 2. Công nghệ và Hạ tầng 
 Dự án được xây dựng trên nền tảng hiện đại, kế thừa từ JHipster:
 
 - **Ngôn ngữ & Framework chính**:
@@ -13,39 +13,37 @@ Dự án được xây dựng trên nền tảng hiện đại, kế thừa từ
   - **Spring Boot 3.3.5**: Framework nền tảng cho Microservices.
   - **JHipster 8.7.2**: Khung nền tảng quản trị tiên tiến.
 - **Cơ sở dữ liệu & Lưu trữ**:
-  - **MySQL**: Hệ quản trị CSDL quan hệ chính.
+  - **MySQL**: Hệ quản trị CSDL quan hệ chính (xampp).
   - **Liquibase**: Quản lý phiên bản và cấu trúc database.
-  - **Hazelcast**: Cơ chế caching phân tán.
 - **Bảo mật & API**:
-  - **Spring Security (OAuth2 / JWT)**: Bảo mật phân tán qua JSON Web Token.
-  - **Springdoc OpenAPI (Swagger)**: Tự động tạo tài liệu API.
+  - **Spring Security (JWT)**: Bảo mật phân tán qua JSON Web Token.
 - **Hạ tầng & Build**:
   - **Maven**: Công cụ quản lý build project.
-  - **Undertow**: Máy chủ web nhúng hiệu năng cao.
+  - **S3**: Quản lý ảnh avatar.                                          
   - **Docker / Jib**: Đóng gói ứng dụng dưới dạng Container.
 
 ---
 
-## 3. Thiết kế Cơ sở dữ liệu (Database Design)
+## 3. Thiết kế Cơ sở dữ liệu 
 
-### 3.1. Thực thể `User` (Mặc định)
+### 3.1. Thực thể `User` 
 - Quản lý các thông tin cốt lõi: `email`, `password_hash`, `activated`.
 
-### 3.2. Thực thể `UserProfile` (Mở rộng)
+### 3.2. Thực thể `UserProfile` 
 - **Mối quan hệ**: One-to-One với `User`.
 - **Thông tin chi tiết**: `phone`, `dob`, `gender`, `position`, `job`, `department`, `avatar`.
 
 ### 3.3. Thực thể `UserToken`
 - Quản lý trạng thái đăng nhập và thu hồi quyền truy cập (`token_str`, `expiry_date`, `is_revoked`).
 
-### 3.4. Ma trận Quyền (Permission Matrix)
+### 3.4. Thực thể "Permission"
 Quyền được thiết kế theo mô hình **Âm (-1) / Dương (1-5)**:
-- **-1**: Quyền quản lý cá nhân (Mặc định).
-- **1**: Quản lý nhân sự (Tạo tài khoản).
-- **2**: Quyền hồ sơ (eForm).
-- **3**: Quyền luồng (eFlow).
-- **4**: Quản lý tài khoản (Tìm kiếm/Xóa mọi tài khoản).
-- **5**: Quản lý truy cập (Gán/Gỡ quyền).
+- **-1**: Quyền quản lý cá nhân.
+- **1**: Quản lý nhân sự.
+- **2**: Quyền hồ sơ.
+- **3**: Quyền luồng.
+- **4**: Quản lý tài khoản.
+- **5**: Quản lý truy cập.
 
 ---
 
@@ -58,49 +56,22 @@ Quyền được thiết kế theo mô hình **Âm (-1) / Dương (1-5)**:
 
 ---
 
-## 5. Danh mục API Chi tiết
+## 5. Các nhóm API
 
-### 5.1. Nhóm Quản trị Nhân sự & Tài khoản
+### 5.1. Nhóm Tài khoản
 - `POST /api/account/profile`: Tạo mới/Cập nhật nhân sự.
 - `POST /api/management/account/search`: Tìm kiếm user.
 - `POST /api/management/account/delete`: Xóa tài khoản.
 
-### 5.2. Nhóm Phân quyền
+### 5.2. Nhóm Quyền
 - `GET /api/permissions/system-roles`: Danh sách quyền hệ thống.
 - `POST /api/permissions/sync`: Đồng bộ hóa danh sách quyền.
 - `POST /api/permissions/search-user-roles`: Xem quyền của user.
 
-### 5.3. Nhóm Inter-service (Nội bộ)
+### 5.3. Nhóm Tương tác
 - `POST /api/internal/auth/generate-token`: Tạo token nội bộ.
 - `POST /api/internal/auth/validate-token`: Validate token.
 - `POST /api/internal/permissions/check-access`: Kiểm tra quyền truy cập.
 
 ---
 
-## 6. Hướng dẫn Phát triển & Triển khai
-
-### Phát triển (Development)
-Để chạy ứng dụng ở chế độ dev, thực hiện lệnh:
-```bash
-./mvnw
-```
-
-### Đóng gói (Production)
-Để đóng gói thành file JAR:
-```bash
-./mvnw -Pprod clean verify
-```
-
-Để chạy với Docker:
-```bash
-docker compose -f src/main/docker/app.yml up -d
-```
-
-### Kiểm thử (Testing)
-Chạy bộ kiểm thử tự động:
-```bash
-./mvnw verify
-```
-
----
-© 2026 eOffice Project - eAccount Microservice.
